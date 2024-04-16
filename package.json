@@ -1,0 +1,27 @@
+{
+    "name": "multiplayer-tictactoe",
+    "version": "1.0.0",
+    "description": "A multiplayer tic-tac-toe game in nodejs",
+    "main": "src/index.js",
+    "repository": "git@github.com:mrx7355608/multiplayer-tictactoe.git",
+    "author": "mrx7355608 <mrx7355608@gmail.com>",
+    "license": "MIT",
+    "type": "module",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2",
+        "express-handlebars": "^7.1.2",
+        "express-session": "^1.18.0",
+        "helmet": "^7.1.0",
+        "hpp": "^0.2.3",
+        "morgan": "^1.10.0",
+        "socket.io": "^4.7.5"
+    },
+    "devDependencies": {
+        "eslint": "^9.0.0"
+    }
+}
