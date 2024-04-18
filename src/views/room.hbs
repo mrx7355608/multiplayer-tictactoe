@@ -25,8 +25,9 @@
 <h1>Room page</h1>
 <p id="user1-name">User 1: Waiting for a user to join...</p>
 <p id="user2-name">User 2: Waiting for a user to join...</p>
-<h2 id="game-over-screen"></h2>
+<div id="game-over-screen"></div>
 <div id="board"></div>
+<div id="rematch-div"></div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -38,6 +39,7 @@
     const user2Name = document.getElementById("user2-name");
     const boardDiv = document.getElementById("board");
     const gameOverScreen = document.getElementById("game-over-screen");
+    const rematchDiv = document.getElementById("rematch-div");
 
     socket.on("new-user-joined", ({ room }) => {
         if (room.user1) {
@@ -105,7 +107,48 @@
 
     socket.on("game-over", ({ winner }) => {
         clearBoard();
-        gameOverScreen.innerText = `${winner} has won the game`;
+        const h2 = document.createElement("h2");
+        h2.innerText = `${winner} has won the game`;
+
+        const rematchButton = document.createElement("button");
+        rematchButton.setAttribute("id", "rematch-btn")
+        rematchButton.innerText = "Rematch"
+        rematchButton.addEventListener("click", rematch);
+
+        gameOverScreen.appendChild(h2);
+        gameOverScreen.appendChild(rematchButton);
+    })
+
+    function rematch() {
+        socket.emit("ask-for-a-rematch");
+    }
+
+    socket.on("want-a-rematch", ({ username }) =>{
+        const rematchH3 = document.createElement("h3")
+        const acceptBtn = document.createElement("button")
+        const rejectBtn = document.createElement("button")
+        document.getElementById("rematch-btn").remove();
+
+        acceptBtn.addEventListener("click", acceptRematch);
+
+        rematchH3.innerText = `${username} wants a rematch`
+        acceptBtn.innerText = "Accept"
+        rejectBtn.innerText = "Reject"
+
+        rematchDiv.appendChild(rematchH3)
+        rematchDiv.appendChild(acceptBtn)
+        rematchDiv.appendChild(rejectBtn)
+    })
+
+    function acceptRematch() {
+        socket.emit("rematch-accepted")
+    }
+
+    socket.on("rematch-start", ({ board }) => {
+        clearBoard();
+        drawBoard(board);
+        Array.from(gameOverScreen.childNodes).forEach(n => n.remove());
+        Array.from(rematchDiv.childNodes).forEach(n => n.remove());
     })
 
 </script>
