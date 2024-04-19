@@ -52,10 +52,20 @@
 
     socket.on("player-left", ({ room }) => {
         if (room.user1 === null) {
-            user1Name.innerText = `User 1: left the game`
+            user1Name.innerText = `User 1: Waiting for a player to join`
         }
         if (room.user2 === null) {
-            user2Name.innerText = `User 2: left the game`;
+            user2Name.innerText = `User 2: Waiting for a player to join`;
+        }
+        clearBoard();
+    })
+
+    socket.on("player-reconnecting", ({ room, username }) => {
+        if (room.user1 === username) {
+            user1Name.innerText = `User 1: Reconnecting...`
+        }
+        if (room.user2 === username) {
+            user2Name.innerText = `User 2: Reconnecting...`;
         }
         clearBoard();
     })
@@ -130,6 +140,7 @@
         document.getElementById("rematch-btn").remove();
 
         acceptBtn.addEventListener("click", acceptRematch);
+        rejectBtn.addEventListener("click", rejectRematch);
 
         rematchH3.innerText = `${username} wants a rematch`
         acceptBtn.innerText = "Accept"
@@ -143,6 +154,17 @@
     function acceptRematch() {
         socket.emit("rematch-accepted")
     }
+
+    function rejectRematch() {
+        socket.emit("rematch-rejected");
+        Array.from(rematchDiv.childNodes).forEach(n => n.remove());
+    }
+
+    socket.on("rematch-cancel", () => {
+        const rematchStatusText = document.createElement("h3")
+        rematchStatusText.innerText = "Rematch rejected";
+        rematchDiv.appendChild(rematchStatusText)
+    })
 
     socket.on("rematch-start", ({ board }) => {
         clearBoard();

@@ -71,14 +71,27 @@ io.on("connection", (socket) => {
         io.to(room.id).emit("rematch-start", { board: room.board });
     });
 
+    socket.on("rematch-rejected", () => {
+        io.to(room.id).emit("rematch-cancel");
+    });
+
+    // RECONNECT & DISCONNECT HANDLING
     socket.on("disconnect", () => {
         console.log(`[DISCONNECTED] ${username} disconnected`);
         if (username === room.user1) {
-            room.user1 = null;
+            io.to(room.user2).emit("player-reconnecting", { room, username });
         } else {
-            room.user2 = null;
+            io.to(room.user1).emit("player-reconnecting", { room, username });
         }
-        io.to(room.id).emit("player-left", { room });
+
+        // setTimeout(() => {
+        //     if (username === room.user1) {
+        //         room.user1 = null;
+        //     } else {
+        //         room.user2 = null;
+        //     }
+        //     io.to(room.id).emit("player-left", { room });
+        // }, 5000);
     });
 });
 
