@@ -20,10 +20,12 @@ const room = {
         ["", "", ""],
         ["", "", ""],
     ],
+    turn: null,
+    winner: null,
 };
 
 io.on("connection", (socket) => {
-    connectionHandler(io, socket);
+    connectionHandler(io, socket, room);
     roomHandler(io, socket, room);
     gameHandler(io, socket, room);
 });

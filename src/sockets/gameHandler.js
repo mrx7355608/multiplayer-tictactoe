@@ -2,17 +2,42 @@ export default function gameHandler(io, socket, room) {
     const { username } = socket.request.session;
 
     socket.on("player-made-a-move", ({ row, col }) => {
+        // Prevent user from making a move when its not his turn
+        if (room.turn !== username) {
+            io.to(username).emit("move-error", {
+                message: "Wait for your turn",
+            });
+            return;
+        }
+
+        // If user1 made a move, then update the board with "X" symbol
         if (username === room.user1) {
             room.board[row][col] = "X";
-        } else {
+        }
+
+        // If user2 made a move, then update the board with "O" symbol
+        else {
             room.board[row][col] = "O";
         }
-        io.to(room.id).emit("board-updated", { board: room.board });
+
+        // Switch turn after a move has been made
+        if (room.turn === room.user1) {
+            room.turn = room.user2;
+        } else {
+            room.turn = room.user1;
+        }
+
+        // Emit an event to update boards on UI of both users
+        io.to(room.id).emit("board-updated", { room });
+
+        // Check for winner
         const winnerSymbol = checkWinner(room.board);
         if (winnerSymbol === "X") {
-            io.to(room.id).emit("game-over", { winner: room.user1 });
+            room.winner = room.user1;
+            io.to(room.id).emit("game-over", { winner: room.winner });
         } else if (winnerSymbol === "O") {
-            io.to(room.id).emit("game-over", { winner: room.user2 });
+            room.winner = room.user2;
+            io.to(room.id).emit("game-over", { winner: room.winner });
         }
     });
 

@@ -25,6 +25,8 @@
 <h1>Room page</h1>
 <p id="user1-name">User 1: Waiting for a user to join...</p>
 <p id="user2-name">User 2: Waiting for a user to join...</p>
+<p id="error" style="color: red;"></p>
+<h4 id="turn"></h4>
 <div id="game-over-screen"></div>
 <div id="board"></div>
 <div id="rematch-div"></div>
@@ -38,8 +40,7 @@
     const user1Name = document.getElementById("user1-name");
     const user2Name = document.getElementById("user2-name");
     const boardDiv = document.getElementById("board");
-    const gameOverScreen = document.getElementById("game-over-screen");
-    const rematchDiv = document.getElementById("rematch-div");
+    const turnHeading = document.getElementById("turn");
 
     socket.on("new-user-joined", ({ room }) => {
         if (room.user1) {
@@ -71,6 +72,7 @@
     })
 
     socket.on("start-game", ({ room }) => {
+        turnHeading.innerText = `Turn: ${room.turn}`;
         drawBoard(room.board);
     })
 
@@ -110,13 +112,21 @@
     }
 
 
-    socket.on("board-updated", ({ board }) => {
+    socket.on("board-updated", ({ room }) => {
+        turnHeading.innerText = `Turn: ${room.turn}`;
         clearBoard();
-        drawBoard(board);
+        drawBoard(room.board);
     })
+
+    // *************************
+    //         GAMEOVER
+    // *************************
+    const gameOverScreen = document.getElementById("game-over-screen");
 
     socket.on("game-over", ({ winner }) => {
         clearBoard();
+        turnHeading.innerText = "";
+
         const h2 = document.createElement("h2");
         h2.innerText = `${winner} has won the game`;
 
@@ -129,8 +139,23 @@
         gameOverScreen.appendChild(rematchButton);
     })
 
+
+    // *************************
+    //         RE-MATCH
+    // *************************
+    const rematchDiv = document.getElementById("rematch-div");
+
     function rematch() {
         socket.emit("ask-for-a-rematch");
+    }
+
+    function acceptRematch() {
+        socket.emit("rematch-accepted")
+    }
+
+    function rejectRematch() {
+        socket.emit("rematch-rejected");
+        Array.from(rematchDiv.childNodes).forEach(n => n.remove());
     }
 
     socket.on("want-a-rematch", ({ username }) =>{
@@ -151,15 +176,6 @@
         rematchDiv.appendChild(rejectBtn)
     })
 
-    function acceptRematch() {
-        socket.emit("rematch-accepted")
-    }
-
-    function rejectRematch() {
-        socket.emit("rematch-rejected");
-        Array.from(rematchDiv.childNodes).forEach(n => n.remove());
-    }
-
     socket.on("rematch-cancel", () => {
         const rematchStatusText = document.createElement("h3")
         rematchStatusText.innerText = "Rematch rejected";
@@ -171,6 +187,18 @@
         drawBoard(board);
         Array.from(gameOverScreen.childNodes).forEach(n => n.remove());
         Array.from(rematchDiv.childNodes).forEach(n => n.remove());
+    })
+
+    
+    // *************************
+    //      ERROR HANDLING
+    // *************************
+    const errorPara = document.getElementById("error");
+    socket.on("move-error", ({ message }) => {
+        errorPara.innerText = message; 
+        setTimeout(() => {
+            errorPara.innerText = "";
+        }, 3000);
     })
 
 </script>
