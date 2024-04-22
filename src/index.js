@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Server } from "socket.io";
 import app from "./app.js";
 import http from "http";
@@ -30,6 +31,6 @@ io.on("connection", (socket) => {
     gameHandler(io, socket, room);
 });
 
-httpServer.listen(8000, () => {
+httpServer.listen(process.env.PORT, "0.0.0.0", () => {
     console.log("listening on port 8000...");
 });
