@@ -23,6 +23,7 @@ const room = {
     ],
     turn: null,
     winner: null,
+    status: "ongoing",
 };
 
 io.on("connection", (socket) => {

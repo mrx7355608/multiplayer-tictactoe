@@ -11,7 +11,7 @@ export default function roomHandler(io, socket, room) {
         }
         io.to(room.id).emit("new-user-joined", { room });
 
-        if (room.winner) {
+        if (room.status === "ended") {
             io.to(username).emit("game-over", { winner: room.winner });
         } else if (room.user1 && room.user2) {
             room.turn = room.user1;

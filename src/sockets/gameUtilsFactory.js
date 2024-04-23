@@ -1,4 +1,6 @@
 export default function GameUtils(room, username) {
+    const _hasCheckedRows = [];
+
     const isCellEmpty = (row, col) => {
         const isEmpty = room.board[row][col] ? false : true;
         return isEmpty;
@@ -18,6 +20,17 @@ export default function GameUtils(room, username) {
         } else {
             room.board[row][col] = "O";
         }
+    };
+
+    const checkIfTie = () => {
+        for (let i = 0; i < 3; i++) {
+            for (let k = 0; k < 3; k++) {
+                if (!room.board[i][k]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     };
 
     const checkWinner = () => {
@@ -101,5 +114,6 @@ export default function GameUtils(room, username) {
         switchTurns,
         checkWinner,
         registerUserMoves,
+        checkIfTie,
     };
 }

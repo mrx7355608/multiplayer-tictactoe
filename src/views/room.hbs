@@ -128,9 +128,13 @@
         turnHeading.innerText = "";
 
         const h2 = document.createElement("h2");
-        h2.innerText = `${winner} has won the game`;
+        if (winner === null) {
+            h2.innerText = "It's a tie";
+        } else {
+            h2.innerText = `${winner} has won the game`;
+        }
 
-        const rematchButton = document.createElement("button");
+        const rematchButton = document.createElement("button")
         rematchButton.setAttribute("id", "rematch-btn")
         rematchButton.innerText = "Rematch"
         rematchButton.addEventListener("click", rematch);

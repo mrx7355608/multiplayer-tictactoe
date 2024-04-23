@@ -33,12 +33,16 @@ export default function gameHandler(io, socket, room) {
 
         // Check for winner
         const winnerSymbol = gameUtils.checkWinner();
-        if (winnerSymbol) {
-            if (winnerSymbol === "X") {
-                room.winner = room.user1;
-            } else {
-                room.winner = room.user2;
-            }
+        if (winnerSymbol === "X") {
+            room.status = "ended";
+            room.winner = room.user1;
+            io.to(room.id).emit("game-over", { winner: room.winner });
+        } else if (winnerSymbol === "O") {
+            room.status = "ended";
+            room.winner = room.user2;
+            io.to(room.id).emit("game-over", { winner: room.winner });
+        } else if (gameUtils.checkIfTie() === true) {
+            room.status = "ended";
             io.to(room.id).emit("game-over", { winner: room.winner });
         }
     });
