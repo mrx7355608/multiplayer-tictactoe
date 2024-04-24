@@ -33,9 +33,10 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io({ autoReconnect: false });
+    const socket = io({ reconnection: false });
 
     socket.emit("play-game")
+    console.log("play game...")
 
     const user1Name = document.getElementById("user1-name");
     const user2Name = document.getElementById("user2-name");
@@ -43,6 +44,7 @@
     const turnHeading = document.getElementById("turn");
 
     socket.on("new-user-joined", ({ room }) => {
+        console.log("new user joined...")
         if (room.user1) {
             user1Name.innerText = `User 1: ${room.user1}`
         }
@@ -51,27 +53,50 @@
         }
     })
 
-    socket.on("player-left", ({ room }) => {
+    
+    // ******************************
+    //     RE-CONNECTION HANDLING
+    // ******************************
+
+    socket.on("player-reconnecting", ({ room, reconnectTimer }) => {
+        console.log("reconnecting...")
         if (room.user1 === null) {
-            user1Name.innerText = `User 1: Waiting for a player to join`
+            user1Name.innerText = `User 1: Reconnecting...(${reconnectTimer})`
         }
         if (room.user2 === null) {
-            user2Name.innerText = `User 2: Waiting for a player to join`;
+            user2Name.innerText = `User 2: Reconnecting...(${reconnectTimer})`
         }
         clearBoard();
     })
 
-    socket.on("player-reconnecting", ({ room, username }) => {
-        if (room.user1 === username) {
-            user1Name.innerText = `User 1: Reconnecting...`
+    socket.on("match-aborted", ({ room }) => {
+        if (room.user1 === null) {
+            user1Name.innerText = `User 1: left the game`
         }
-        if (room.user2 === username) {
-            user2Name.innerText = `User 2: Reconnecting...`;
+        if (room.user2 === null) {
+            user2Name.innerText = `User 2: left the game`;
         }
+
         clearBoard();
+        turnHeading.innerText = "";
+
+        const h2 = document.createElement("h2");
+        if (room.winner === null) {
+            h2.innerText = "It's a tie";
+        } else {
+            h2.innerText = `${room.winner} has won the game`;
+        }
+
+        const homeLink = document.createElement("a");
+        homeLink.setAttribute("href", "/");
+        homeLink.innerText = "Go back to home";
+
+        gameOverScreen.appendChild(h2);
+        gameOverScreen.appendChild(homeLink);
     })
 
     socket.on("start-game", ({ room }) => {
+        console.log("starting game..")
         turnHeading.innerText = `Turn: ${room.turn}`;
         drawBoard(room.board);
     })
@@ -166,7 +191,7 @@
         const rematchH3 = document.createElement("h3")
         const acceptBtn = document.createElement("button")
         const rejectBtn = document.createElement("button")
-        document.getElementById("rematch-btn").remove();
+        // document.getElementById("rematch-btn").remove();
 
         acceptBtn.addEventListener("click", acceptRematch);
         rejectBtn.addEventListener("click", rejectRematch);
